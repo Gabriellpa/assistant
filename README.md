@@ -1,12 +1,18 @@
 # Contextual Desktop Assistant — Planejamento v1
 
-Este repositório contém as RFCs da v1 e uma base estável para iniciar a **Fase 1 (Fundação)** sem conflitos de merge na documentação principal.
+Este repositório contém as 3 RFCs oficiais da v1 e a base técnica para iniciar a **Fase 1 (Fundação)**.
 
 ## Documentação principal
 
 - RFCs: `docs/rfcs/`
 - Roadmap executável: `docs/roadmap.md`
 - Status técnico: `docs/status/fase-1-scaffold.md`
+
+## Ordem de leitura recomendada
+
+1. RFC-001 (visão de produto e escopo do MVP)
+2. RFC-002 (arquitetura técnica e contratos IPC)
+3. RFC-003 (state machine da UI e fluxos UX)
 
 ## Escopo da Fase 1 neste repositório
 
