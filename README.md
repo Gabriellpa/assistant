@@ -1,29 +1,22 @@
 # Contextual Desktop Assistant — Planejamento v1
 
-Este repositório contém as RFCs da v1 e agora também um scaffold inicial da **Fase 1** (Tauri + Vue 3 + Pinia + IPC base).
+Este repositório agora contém as 3 RFCs que definem a v1 da aplicação e um roadmap direto para execução.
 
-## Estrutura
+## Documentação principal
 
-- `docs/rfcs/`: RFC-001, RFC-002 e RFC-003
-- `docs/roadmap.md`: plano por fases com backlog
-- `src/`: frontend Vue 3 + Pinia
-- `src-tauri/`: backend Rust/Tauri com commands IPC
+- RFCs: `docs/rfcs/`
+- Roadmap executável: `docs/roadmap.md`
 
-## Como rodar (scaffold)
+## Ordem de leitura recomendada
 
-```bash
-npm install
-npm run tauri dev
-```
+1. RFC-001 (visão de produto e escopo do MVP)
+2. RFC-002 (arquitetura técnica e contratos IPC)
+3. RFC-003 (state machine da UI e fluxos UX)
 
-## Entregas já feitas na Fase 1
+## Próximos passos práticos
 
-- Scaffold do app com Vite + Vue 3 + Pinia
-- Overlay base com toolbar e estado inicial em store
-- Tokens de tema dark/light via CSS variables
-- Commands IPC v1 expostos no backend Tauri
-- Módulos backend-base: `HotkeyService`, `ClipboardService`, `WindowManager`, `SecurityService`
-
-## Próximo passo
-
-Implementar a Fase 2: captura contextual (hotkey + fallback imagem + modo caneta com ESC e preview).
+1. Criar o scaffold do app Tauri + Vue 3 + Pinia.
+2. Implementar os contratos IPC v1 e serviços backend-base.
+3. Entregar fluxos de captura (hotkey/caneta) com preview.
+4. Integrar chat com IA no modelo BYOK.
+5. Validar critérios de aceite do backlog P0 em `docs/roadmap.md`.

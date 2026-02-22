@@ -13,10 +13,10 @@ Entregar um assistente desktop contextual, local-first e privacy-oriented, const
 
 ## Fase 1 — Fundação (1-2 semanas)
 
-- [x] Scaffold do app Tauri + Vue 3 + Pinia
-- [x] Contratos IPC v1 (`start_text_capture`, `start_selection_mode`, `send_to_ai`, `save_api_key`, `validate_api_key`)
-- [x] Módulos backend base (`HotkeyService`, `ClipboardService`, `WindowManager`, `SecurityService`)
-- [x] Tokens de tema dark/light via CSS variables
+- [ ] Scaffold do app Tauri + Vue 3 + Pinia
+- [ ] Contratos IPC v1 (`start_text_capture`, `start_selection_mode`, `send_to_ai`, `save_api_key`, `validate_api_key`)
+- [ ] Módulos backend base (`HotkeyService`, `ClipboardService`, `WindowManager`, `SecurityService`)
+- [ ] Tokens de tema dark/light via CSS variables
 
 ## Fase 2 — Captura contextual (2-3 semanas)
 
