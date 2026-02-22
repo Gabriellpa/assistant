@@ -10,6 +10,7 @@ fn main() {
             commands::start_text_capture,
             commands::start_selection_mode,
             commands::cancel_selection_mode,
+            commands::set_interaction_mode,
             commands::send_to_ai,
             commands::save_api_key,
             commands::validate_api_key,

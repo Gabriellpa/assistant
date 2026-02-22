@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::models::{AIRequest, AIResponse, CapturePayload, ChatMessage, Context, ImageRef};
 use crate::services::{
@@ -83,6 +83,22 @@ pub fn cancel_selection_mode(app: AppHandle) -> Result<String, String> {
     app.emit("capture_cancelled", "cancelled")
         .map_err(|e| e.to_string())?;
     Ok("idle".into())
+}
+
+#[tauri::command]
+pub fn set_interaction_mode(app: AppHandle, interactive: bool) -> Result<bool, String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "main window not found".to_string())?;
+
+    window
+        .set_ignore_cursor_events(!interactive)
+        .map_err(|e| e.to_string())?;
+    window
+        .set_focusable(interactive)
+        .map_err(|e| e.to_string())?;
+
+    Ok(interactive)
 }
 
 #[tauri::command]

@@ -6,7 +6,7 @@ import { useAssistantStore } from '../stores/assistant'
 const fileInput = ref(null)
 const messagesRef = ref(null)
 const store = useAssistantStore()
-const { uiState, captureMode, context, messages, composerText, canSend, attachedImage, theme, hasApiKey, lastError, configModalOpen, provider, apiKey } =
+const { uiState, captureMode, context, messages, composerText, canSend, attachedImage, theme, hasApiKey, lastError, configModalOpen, provider, apiKey, interactionMode } =
   storeToRefs(store)
 
 const selecting = ref(false)
@@ -61,6 +61,16 @@ const onPanelDragEnd = () => {
 }
 
 const onKeydown = (event) => {
+  if (event.key.toLowerCase() === 'i' && event.ctrlKey && event.shiftKey) {
+    event.preventDefault()
+    store.toggleInteractionMode()
+    return
+  }
+
+  if (interactionMode.value === 'click_through') {
+    return
+  }
+
   if (event.key === 'Escape' && configModalOpen.value) {
     store.closeConfigModal()
     return
@@ -162,6 +172,13 @@ onBeforeUnmount(() => {
         <button class="icon" title="Alternar tema" @click.stop="store.setTheme(theme === 'dark' ? 'light' : 'dark')">
           {{ theme === 'dark' ? '🌙' : '☀️' }}
         </button>
+        <button
+          class="icon"
+          :title="interactionMode === 'interactive' ? 'Ativar click-through' : 'Ativar modo interativo'"
+          @click.stop="store.toggleInteractionMode()"
+        >
+          {{ interactionMode === 'interactive' ? '🖱️' : '🪟' }}
+        </button>
         <span class="state">{{ uiState }}</span>
       </header>
 
@@ -205,6 +222,7 @@ onBeforeUnmount(() => {
         <small>ESC cancela captura ativa.</small>
         <small v-if="attachedImage">Imagem anexada: {{ attachedImage.path }}</small>
         <small v-if="!hasApiKey">Provider não configurado.</small>
+        <small>Ctrl+Shift+I alterna interação/click-through.</small>
       </section>
 
       <div class="modal-backdrop" v-if="configModalOpen" @click.self="store.closeConfigModal">

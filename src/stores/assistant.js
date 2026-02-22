@@ -17,12 +17,16 @@ export const useAssistantStore = defineStore('assistant', {
     theme: 'dark',
     lastError: '',
     configModalOpen: false,
+    interactionMode: 'interactive',
     bootstrapped: false
   }),
 
   getters: {
     canSend(state) {
       return validSendStates.includes(state.uiState)
+    },
+    isInteractive(state) {
+      return state.interactionMode === 'interactive'
     }
   },
 
@@ -53,6 +57,23 @@ export const useAssistantStore = defineStore('assistant', {
 
       this.applyTheme(this.theme)
       this.bootstrapped = true
+    },
+
+    async setInteractionMode(mode) {
+      const interactive = mode !== 'click_through'
+      const result = await tauriInvoke('set_interaction_mode', { interactive })
+
+      if (result === null) {
+        this.interactionMode = interactive ? 'interactive' : 'click_through'
+        return
+      }
+
+      this.interactionMode = result ? 'interactive' : 'click_through'
+    },
+
+    async toggleInteractionMode() {
+      const nextMode = this.interactionMode === 'interactive' ? 'click_through' : 'interactive'
+      await this.setInteractionMode(nextMode)
     },
 
     openConfigModal() {

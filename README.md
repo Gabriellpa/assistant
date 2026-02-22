@@ -7,6 +7,7 @@ Este repositório contém as 3 RFCs oficiais da v1 e a base técnica para inicia
 - RFCs: `docs/rfcs/`
 - Roadmap executável: `docs/roadmap.md`
 - Status técnico: `docs/status/fase-1-scaffold.md`
+- Overlay desktop (HUD): `docs/desktop-overlay.md`
 
 ## Ordem de leitura recomendada
 
