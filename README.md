@@ -1,6 +1,6 @@
 # Contextual Desktop Assistant — Planejamento v1
 
-Este repositório contém as RFCs da v1 e a base da **Fase 1 (Fundação)** já iniciada com scaffold Tauri + Vue 3 + Pinia.
+Este repositório contém as RFCs da v1 e a base documental/técnica para iniciar a **Fase 1 (Fundação)**.
 
 ## Documentação principal
 
@@ -8,7 +8,7 @@ Este repositório contém as RFCs da v1 e a base da **Fase 1 (Fundação)** já 
 - Roadmap executável: `docs/roadmap.md`
 - Status técnico: `docs/status/fase-1-scaffold.md`
 
-## Fase 1 entregue neste repositório
+## Escopo da Fase 1 neste repositório
 
 - Scaffold do app Tauri + Vue 3 + Pinia
 - Contratos IPC v1 (`start_text_capture`, `start_selection_mode`, `send_to_ai`, `save_api_key`, `validate_api_key`)
