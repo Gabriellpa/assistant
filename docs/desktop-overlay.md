@@ -17,7 +17,7 @@ Principais flags aplicadas na janela `main`:
 - `decorations: false`
 - `transparent: true`
 - `alwaysOnTop: true`
-- `skipTaskbar: true`
+- `skipTaskbar: false` (para facilitar acesso na barra de tarefas)
 - `shadow: false`
 - `resizable: false`
 
@@ -98,3 +98,18 @@ No componente `ChatOverlay.vue`:
 
 - A bridge frontend tenta resolver IPC por `window.__TAURI__` **e** `window.__TAURI_INTERNALS__`.
 - Isso evita falhas de detecção de runtime em cenários onde apenas os internals estão disponíveis.
+
+
+## Acesso quando em click-through
+
+- A app cria um **tray icon** com ações:
+  - `Mostrar core (interativo)`
+  - `Alternar interação`
+  - `Sair`
+- Isso permite recuperar a interação mesmo quando a janela estiver em click-through.
+- A janela também permanece visível na barra de tarefas (`skipTaskbar: false`).
+
+## Nota sobre modal de configuração
+
+- Ao abrir a modal, a app força modo interativo.
+- Ao fechar, retorna ao modo anterior (normalmente click-through).

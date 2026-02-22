@@ -19,6 +19,7 @@ export const useAssistantStore = defineStore('assistant', {
     configModalOpen: false,
     interactionMode: 'click_through',
     coreOpacity: 0.92,
+    modeBeforeModal: 'click_through',
     bootstrapped: false
   }),
 
@@ -79,15 +80,14 @@ export const useAssistantStore = defineStore('assistant', {
     },
 
     async openConfigModal() {
+      this.modeBeforeModal = this.interactionMode
       await this.setInteractionMode('interactive')
       this.configModalOpen = true
     },
 
     async closeConfigModal() {
       this.configModalOpen = false
-      if (this.interactionMode === 'click_through') {
-        await this.setInteractionMode('click_through')
-      }
+      await this.setInteractionMode(this.modeBeforeModal || 'click_through')
     },
 
     setComposerText(value) {

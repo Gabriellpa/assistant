@@ -1,12 +1,19 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    sync::Mutex,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::models::{AIRequest, AIResponse, CapturePayload, ChatMessage, Context, ImageRef};
 use crate::services::{
     clipboard_service::ClipboardService, hotkey_service::HotkeyService,
     security_service::SecurityService, window_manager::WindowManager,
 };
+
+pub struct OverlayState {
+    pub interactive: Mutex<bool>,
+}
 
 fn now_ts() -> i64 {
     SystemTime::now()
@@ -22,6 +29,22 @@ fn sample_image_ref(id: &str) -> ImageRef {
         width: 640,
         height: 360,
     }
+}
+
+pub fn apply_interaction_mode(
+    window: &tauri::WebviewWindow,
+    interactive: bool,
+) -> Result<(), String> {
+    window
+        .set_ignore_cursor_events(!interactive)
+        .map_err(|e| e.to_string())?;
+    window
+        .set_focusable(interactive)
+        .map_err(|e| e.to_string())?;
+    window.set_always_on_top(true).map_err(|e| e.to_string())?;
+    window.set_decorations(false).map_err(|e| e.to_string())?;
+    window.set_shadow(false).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -86,17 +109,20 @@ pub fn cancel_selection_mode(app: AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn set_interaction_mode(app: AppHandle, interactive: bool) -> Result<bool, String> {
+pub fn set_interaction_mode(
+    app: AppHandle,
+    interactive: bool,
+    state: State<'_, OverlayState>,
+) -> Result<bool, String> {
     let window = app
         .get_webview_window("main")
         .ok_or_else(|| "main window not found".to_string())?;
 
-    window
-        .set_ignore_cursor_events(!interactive)
-        .map_err(|e| e.to_string())?;
-    window
-        .set_focusable(interactive)
-        .map_err(|e| e.to_string())?;
+    apply_interaction_mode(&window, interactive)?;
+
+    if let Ok(mut guard) = state.interactive.lock() {
+        *guard = interactive;
+    }
 
     Ok(interactive)
 }
