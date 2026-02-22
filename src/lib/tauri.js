@@ -1,15 +1,41 @@
 const tauriGlobal = () => window.__TAURI__ || null
+const tauriInternals = () => window.__TAURI_INTERNALS__ || null
 
-const isTauriRuntime = () => Boolean(tauriGlobal())
+const isTauriRuntime = () => Boolean(tauriGlobal() || tauriInternals())
 
-export async function tauriInvoke(command, payload = {}) {
+const resolveInvoke = () => {
   const tauri = tauriGlobal()
-  if (!tauri) {
-    return null
+  const internals = tauriInternals()
+
+  if (typeof tauri?.core?.invoke === 'function') {
+    return tauri.core.invoke
   }
 
-  const invoke = tauri?.core?.invoke
-  if (typeof invoke !== 'function') {
+  if (typeof internals?.invoke === 'function') {
+    return internals.invoke
+  }
+
+  return null
+}
+
+const resolveListen = () => {
+  const tauri = tauriGlobal()
+  const internals = tauriInternals()
+
+  if (typeof tauri?.event?.listen === 'function') {
+    return tauri.event.listen
+  }
+
+  if (typeof internals?.event?.listen === 'function') {
+    return internals.event.listen
+  }
+
+  return null
+}
+
+export async function tauriInvoke(command, payload = {}) {
+  const invoke = resolveInvoke()
+  if (!invoke) {
     return null
   }
 
@@ -17,13 +43,8 @@ export async function tauriInvoke(command, payload = {}) {
 }
 
 export async function tauriListen(eventName, handler) {
-  const tauri = tauriGlobal()
-  if (!tauri) {
-    return () => {}
-  }
-
-  const listen = tauri?.event?.listen
-  if (typeof listen !== 'function') {
+  const listen = resolveListen()
+  if (!listen) {
     return () => {}
   }
 

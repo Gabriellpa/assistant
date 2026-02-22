@@ -35,6 +35,10 @@ Comportamento:
 - `set_focusable(false)` evita foco indevido quando click-through
 - `set_ignore_cursor_events(false)` e `set_focusable(true)` retornam ao modo interativo
 
+Inicialização (produção):
+
+- No `setup` do backend, a janela principal já inicia em click-through (`set_ignore_cursor_events(true)`) e não focável, para evitar bloquear desktop mesmo antes do frontend montar.
+
 ### Frontend
 
 - Estado: `interactionMode` em `src/stores/assistant.js`
@@ -88,3 +92,9 @@ No componente `ChatOverlay.vue`:
 
 - A aplicação inicializa em `click-through` para não bloquear a interação com o desktop.
 - Para voltar ao modo interativo, use `Ctrl+Shift+I` ou o botão na toolbar quando estiver interativo.
+
+
+## Robustez da bridge frontend
+
+- A bridge frontend tenta resolver IPC por `window.__TAURI__` **e** `window.__TAURI_INTERNALS__`.
+- Isso evita falhas de detecção de runtime em cenários onde apenas os internals estão disponíveis.

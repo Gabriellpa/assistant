@@ -4,8 +4,18 @@ mod commands;
 mod models;
 mod services;
 
+use tauri::Manager;
+
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_always_on_top(true);
+                let _ = window.set_ignore_cursor_events(true);
+                let _ = window.set_focusable(false);
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::start_text_capture,
             commands::start_selection_mode,
