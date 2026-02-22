@@ -1,19 +1,33 @@
-const isTauriRuntime = () => Boolean(window.__TAURI_INTERNALS__ || window.__TAURI__)
+const tauriGlobal = () => window.__TAURI__ || null
+
+const isTauriRuntime = () => Boolean(tauriGlobal())
 
 export async function tauriInvoke(command, payload = {}) {
-  if (!isTauriRuntime()) {
+  const tauri = tauriGlobal()
+  if (!tauri) {
     return null
   }
 
-  const { invoke } = await import('@tauri-apps/api/core')
+  const invoke = tauri?.core?.invoke
+  if (typeof invoke !== 'function') {
+    return null
+  }
+
   return invoke(command, payload)
 }
 
 export async function tauriListen(eventName, handler) {
-  if (!isTauriRuntime()) {
+  const tauri = tauriGlobal()
+  if (!tauri) {
     return () => {}
   }
 
-  const { listen } = await import('@tauri-apps/api/event')
+  const listen = tauri?.event?.listen
+  if (typeof listen !== 'function') {
+    return () => {}
+  }
+
   return listen(eventName, handler)
 }
+
+export { isTauriRuntime }
