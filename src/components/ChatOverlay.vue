@@ -1,12 +1,25 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAssistantStore } from '../stores/assistant'
 
 const fileInput = ref(null)
+const messagesRef = ref(null)
 const store = useAssistantStore()
 const { uiState, captureMode, context, messages, composerText, canSend, attachedImage, theme, hasApiKey, lastError, configModalOpen, provider, apiKey } =
   storeToRefs(store)
+
+const selecting = ref(false)
+const startPoint = ref({ x: 0, y: 0 })
+const endPoint = ref({ x: 0, y: 0 })
+
+const selectionRect = computed(() => {
+  const x = Math.min(startPoint.value.x, endPoint.value.x)
+  const y = Math.min(startPoint.value.y, endPoint.value.y)
+  const width = Math.abs(startPoint.value.x - endPoint.value.x)
+  const height = Math.abs(startPoint.value.y - endPoint.value.y)
+  return { x, y, width, height }
+})
 
 const onKeydown = (event) => {
   if (event.key === 'Escape' && configModalOpen.value) {
@@ -14,7 +27,8 @@ const onKeydown = (event) => {
     return
   }
 
-  if (event.key === 'Escape' && ['capturing_text', 'capturing_image'].includes(store.uiState)) {
+  if (event.key === 'Escape' && uiState.value === 'capturing_image') {
+    selecting.value = false
     store.cancelCapture()
     return
   }
@@ -38,6 +52,40 @@ const onComposerKeydown = (event) => {
 const triggerFilePicker = () => {
   fileInput.value?.click()
 }
+
+const onSelectionStart = (event) => {
+  selecting.value = true
+  startPoint.value = { x: event.clientX, y: event.clientY }
+  endPoint.value = { x: event.clientX, y: event.clientY }
+}
+
+const onSelectionMove = (event) => {
+  if (!selecting.value) return
+  endPoint.value = { x: event.clientX, y: event.clientY }
+}
+
+const onSelectionEnd = () => {
+  if (!selecting.value) return
+  selecting.value = false
+
+  const rect = selectionRect.value
+  if (rect.width < 4 || rect.height < 4) {
+    store.lastError = 'Seleção muito pequena. Tente novamente.'
+    return
+  }
+
+  store.applyManualSelection(rect)
+}
+
+watch(
+  () => messages.value.length,
+  async () => {
+    await nextTick()
+    if (messagesRef.value) {
+      messagesRef.value.scrollTop = messagesRef.value.scrollHeight
+    }
+  }
+)
 
 onMounted(() => {
   store.bootstrap()
@@ -81,7 +129,7 @@ onBeforeUnmount(() => {
       <p v-else-if="context.image">Imagem: {{ context.image.path }}</p>
     </div>
 
-    <div class="messages">
+    <div ref="messagesRef" class="messages">
       <p v-if="messages.length === 0" class="muted">Sem mensagens ainda.</p>
       <article v-for="(message, idx) in messages" :key="idx" class="msg" :class="message.role">
         <strong>{{ message.role }}:</strong>
@@ -108,6 +156,20 @@ onBeforeUnmount(() => {
       <small v-if="attachedImage">Imagem anexada: {{ attachedImage.path }}</small>
       <small v-if="!hasApiKey">Provider não configurado.</small>
     </section>
+
+    <div class="selection-layer" v-if="uiState === 'capturing_image'" @mousedown="onSelectionStart" @mousemove="onSelectionMove" @mouseup="onSelectionEnd">
+      <div class="selection-tip">Arraste para selecionar a área da captura (ESC cancela)</div>
+      <div
+        v-if="selecting"
+        class="selection-rect"
+        :style="{
+          left: `${selectionRect.x}px`,
+          top: `${selectionRect.y}px`,
+          width: `${selectionRect.width}px`,
+          height: `${selectionRect.height}px`
+        }"
+      />
+    </div>
 
     <div class="modal-backdrop" v-if="configModalOpen" @click.self="store.closeConfigModal">
       <section class="config-modal" role="dialog" aria-label="Configurar API key">
@@ -168,6 +230,30 @@ onBeforeUnmount(() => {
 .hidden { display: none; }
 .send { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; }
 .hints { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 10px 10px; color: var(--text-muted); }
+.selection-layer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: crosshair;
+  z-index: 2000;
+}
+.selection-tip {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 17, 20, 0.85);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.selection-rect {
+  position: fixed;
+  border: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); display: grid; place-items: center; border-radius: 12px; }
 .config-modal { width: min(420px, calc(100% - 24px)); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
 .config-modal h3 { margin: 0; }

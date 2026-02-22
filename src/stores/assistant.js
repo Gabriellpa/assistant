@@ -110,8 +110,11 @@ export const useAssistantStore = defineStore('assistant', {
             image: null,
             created_at: Date.now()
           }
+          this.uiState = 'preview_ready'
+          return
         }
-        this.uiState = 'preview_ready'
+
+        this.uiState = state
       } catch {
         this.lastError = 'Falha ao capturar com hotkey.'
         this.uiState = 'error'
@@ -125,25 +128,29 @@ export const useAssistantStore = defineStore('assistant', {
 
       try {
         const state = await tauriInvoke('start_selection_mode')
-        if (!state) {
-          this.context = {
-            id: 'ctx-local-image-1',
-            type: 'image',
-            content: null,
-            image: {
-              id: 'img-local-1',
-              path: '/tmp/local-preview.png',
-              width: 640,
-              height: 360
-            },
-            created_at: Date.now()
-          }
+        if (state === 'preview_ready') {
+          this.uiState = 'preview_ready'
         }
-        this.uiState = 'preview_ready'
       } catch {
         this.lastError = 'Falha ao abrir modo caneta/seleção de área.'
         this.uiState = 'error'
       }
+    },
+
+    applyManualSelection(bounds) {
+      this.context = {
+        id: `ctx-manual-${Date.now()}`,
+        type: 'image',
+        content: null,
+        image: {
+          id: `img-manual-${Date.now()}`,
+          path: `selection:${Math.round(bounds.width)}x${Math.round(bounds.height)}@${Math.round(bounds.x)},${Math.round(bounds.y)}`,
+          width: Math.max(1, Math.round(bounds.width)),
+          height: Math.max(1, Math.round(bounds.height))
+        },
+        created_at: Date.now()
+      }
+      this.uiState = 'preview_ready'
     },
 
     async cancelCapture() {
