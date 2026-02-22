@@ -1,6 +1,6 @@
 # Contextual Desktop Assistant — Planejamento v1
 
-Este repositório contém as RFCs da v1 e a base documental/técnica para iniciar a **Fase 1 (Fundação)**.
+Este repositório contém as RFCs da v1 e uma base estável para iniciar a **Fase 1 (Fundação)** sem conflitos de merge na documentação principal.
 
 ## Documentação principal
 
