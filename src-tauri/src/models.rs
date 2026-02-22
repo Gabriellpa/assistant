@@ -43,7 +43,7 @@ pub struct AIError {
     pub message: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CapturePayload {
     pub context: Context,
 }
