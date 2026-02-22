@@ -42,7 +42,7 @@ fn main() {
 
             let _tray = TrayIconBuilder::new()
                 .menu(&menu)
-                .on_menu_event(|app, event| {
+                .on_menu_event(|app: &tauri::AppHandle, event: tauri::menu::MenuEvent| {
                     let Some(window) = app.get_webview_window("main") else {
                         return;
                     };
