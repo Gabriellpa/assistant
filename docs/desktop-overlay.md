@@ -76,3 +76,15 @@ No componente `ChatOverlay.vue`:
 
 - Click-through é binário no nível da janela (não por região) nesta implementação.
 - Para “regiões interativas seletivas” (somente card clicável e resto sempre pass-through) podem ser necessários ajustes nativos adicionais por plataforma.
+
+
+## Opacidade do core (UI)
+
+- O painel do assistente (core) possui controle de opacidade na modal de configurações.
+- Faixa suportada: `30%` a `100%`.
+- A opacidade afeta apenas o card da UI, não a janela HUD inteira.
+
+## Modo padrão de inicialização
+
+- A aplicação inicializa em `click-through` para não bloquear a interação com o desktop.
+- Para voltar ao modo interativo, use `Ctrl+Shift+I` ou o botão na toolbar quando estiver interativo.

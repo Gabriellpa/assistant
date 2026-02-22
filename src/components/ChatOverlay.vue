@@ -6,7 +6,7 @@ import { useAssistantStore } from '../stores/assistant'
 const fileInput = ref(null)
 const messagesRef = ref(null)
 const store = useAssistantStore()
-const { uiState, captureMode, context, messages, composerText, canSend, attachedImage, theme, hasApiKey, lastError, configModalOpen, provider, apiKey, interactionMode } =
+const { uiState, captureMode, context, messages, composerText, canSend, attachedImage, theme, hasApiKey, lastError, configModalOpen, provider, apiKey, interactionMode, coreOpacity } =
   storeToRefs(store)
 
 const selecting = ref(false)
@@ -27,7 +27,8 @@ const selectionRect = computed(() => {
 
 const panelStyle = computed(() => ({
   left: `${panelPosition.value.x}px`,
-  top: `${panelPosition.value.y}px`
+  top: `${panelPosition.value.y}px`,
+  opacity: String(coreOpacity.value)
 }))
 
 const clampPanel = (nextX, nextY) => {
@@ -223,6 +224,7 @@ onBeforeUnmount(() => {
         <small v-if="attachedImage">Imagem anexada: {{ attachedImage.path }}</small>
         <small v-if="!hasApiKey">Provider não configurado.</small>
         <small>Ctrl+Shift+I alterna interação/click-through.</small>
+        <small>Inicializa em click-through para não bloquear o desktop.</small>
       </section>
 
       <div class="modal-backdrop" v-if="configModalOpen" @click.self="store.closeConfigModal">
@@ -241,6 +243,20 @@ onBeforeUnmount(() => {
             API key
             <input v-model="apiKey" type="password" placeholder="Cole sua API key" />
           </label>
+
+          <label>
+            Opacidade do core
+            <input
+              type="range"
+              min="0.3"
+              max="1"
+              step="0.05"
+              :value="coreOpacity"
+              @input="store.setCoreOpacity($event.target.value)"
+            />
+            <small>{{ Math.round(coreOpacity * 100) }}%</small>
+          </label>
+
 
           <div class="modal-actions">
             <button class="ghost" @click="store.closeConfigModal">Cancelar</button>

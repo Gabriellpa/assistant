@@ -17,7 +17,8 @@ export const useAssistantStore = defineStore('assistant', {
     theme: 'dark',
     lastError: '',
     configModalOpen: false,
-    interactionMode: 'interactive',
+    interactionMode: 'click_through',
+    coreOpacity: 0.92,
     bootstrapped: false
   }),
 
@@ -56,6 +57,7 @@ export const useAssistantStore = defineStore('assistant', {
       }
 
       this.applyTheme(this.theme)
+      await this.setInteractionMode(this.interactionMode)
       this.bootstrapped = true
     },
 
@@ -76,12 +78,16 @@ export const useAssistantStore = defineStore('assistant', {
       await this.setInteractionMode(nextMode)
     },
 
-    openConfigModal() {
+    async openConfigModal() {
+      await this.setInteractionMode('interactive')
       this.configModalOpen = true
     },
 
-    closeConfigModal() {
+    async closeConfigModal() {
       this.configModalOpen = false
+      if (this.interactionMode === 'click_through') {
+        await this.setInteractionMode('click_through')
+      }
     },
 
     setComposerText(value) {
@@ -100,6 +106,13 @@ export const useAssistantStore = defineStore('assistant', {
         width: 0,
         height: 0
       }
+    },
+
+
+    setCoreOpacity(value) {
+      const parsed = Number(value)
+      if (Number.isNaN(parsed)) return
+      this.coreOpacity = Math.min(1, Math.max(0.3, parsed))
     },
 
     setTheme(nextTheme) {
