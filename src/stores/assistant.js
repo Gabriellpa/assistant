@@ -12,6 +12,9 @@ export const useAssistantStore = defineStore('assistant', {
     composerText: '',
     attachedImage: null,
     apiKey: '',
+    hasApiKey: false,
+    theme: 'dark',
+    lastError: '',
     bootstrapped: false
   }),
 
@@ -25,17 +28,17 @@ export const useAssistantStore = defineStore('assistant', {
     async bootstrap() {
       if (this.bootstrapped) return
 
-      const onTextCaptured = async (event) => {
+      const onTextCaptured = (event) => {
         this.context = event.payload.context
         this.uiState = 'preview_ready'
       }
 
-      const onImageCaptured = async (event) => {
+      const onImageCaptured = (event) => {
         this.context = event.payload.context
         this.uiState = 'preview_ready'
       }
 
-      const onCaptureCancelled = async () => {
+      const onCaptureCancelled = () => {
         this.uiState = 'idle'
       }
 
@@ -43,6 +46,14 @@ export const useAssistantStore = defineStore('assistant', {
       this.unlistenImage = await tauriListen('image_captured', onImageCaptured)
       this.unlistenCancelled = await tauriListen('capture_cancelled', onCaptureCancelled)
 
+      const keyIsValid = await tauriInvoke('validate_api_key')
+      this.hasApiKey = Boolean(keyIsValid)
+
+      if (!this.hasApiKey) {
+        this.uiState = 'missing_api_key'
+      }
+
+      this.applyTheme(this.theme)
       this.bootstrapped = true
     },
 
@@ -64,11 +75,28 @@ export const useAssistantStore = defineStore('assistant', {
       }
     },
 
+    setTheme(nextTheme) {
+      this.theme = nextTheme === 'light' ? 'light' : 'dark'
+      this.applyTheme(this.theme)
+    },
+
+    applyTheme(theme) {
+      const root = document.documentElement
+      if (theme === 'light') {
+        root.setAttribute('data-theme', 'light')
+      } else {
+        root.removeAttribute('data-theme')
+      }
+    },
+
     async startHotkeyCapture() {
       this.captureMode = 'hotkey'
       this.uiState = 'capturing_text'
+      this.lastError = ''
+
       try {
         const state = await tauriInvoke('start_text_capture')
+
         if (!state) {
           this.context = {
             id: 'ctx-local-text-1',
@@ -78,8 +106,10 @@ export const useAssistantStore = defineStore('assistant', {
             created_at: Date.now()
           }
         }
+
         this.uiState = 'preview_ready'
       } catch {
+        this.lastError = 'Falha ao capturar com hotkey.'
         this.uiState = 'error'
       }
     },
@@ -87,8 +117,11 @@ export const useAssistantStore = defineStore('assistant', {
     async startPenCapture() {
       this.captureMode = 'pen'
       this.uiState = 'capturing_image'
+      this.lastError = ''
+
       try {
         const state = await tauriInvoke('start_selection_mode')
+
         if (!state) {
           this.context = {
             id: 'ctx-local-image-1',
@@ -103,24 +136,35 @@ export const useAssistantStore = defineStore('assistant', {
             created_at: Date.now()
           }
         }
+
         this.uiState = 'preview_ready'
       } catch {
+        this.lastError = 'Falha ao iniciar modo caneta.'
         this.uiState = 'error'
       }
     },
 
+    async cancelCapture() {
+      await tauriInvoke('cancel_selection_mode')
+      this.uiState = 'idle'
+    },
+
     async saveApiKey() {
       if (!this.apiKey.trim()) {
+        this.hasApiKey = false
         this.uiState = 'missing_api_key'
         return false
       }
 
       const result = await tauriInvoke('save_api_key', { key: this.apiKey.trim() })
+
       if (result === null) {
+        this.hasApiKey = true
         this.uiState = 'idle'
         return true
       }
 
+      this.hasApiKey = Boolean(result)
       this.uiState = result ? 'idle' : 'error'
       return Boolean(result)
     },
@@ -138,6 +182,7 @@ export const useAssistantStore = defineStore('assistant', {
       })
 
       this.uiState = 'loading_ai'
+      this.lastError = ''
 
       try {
         const response = await tauriInvoke('send_to_ai', {
@@ -161,9 +206,12 @@ export const useAssistantStore = defineStore('assistant', {
         }
       } catch (error) {
         if (String(error).includes('missing_api_key')) {
+          this.hasApiKey = false
           this.uiState = 'missing_api_key'
+          this.lastError = 'Configure uma API key válida para continuar.'
         } else {
           this.uiState = 'error'
+          this.lastError = 'Falha ao enviar mensagem para IA.'
         }
       } finally {
         this.composerText = ''
