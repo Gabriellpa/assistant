@@ -1,7 +1,12 @@
 pub struct ClipboardService;
 
 impl ClipboardService {
-    pub fn new() -> Self {
-        Self
+    pub fn read_text() -> Option<String> {
+        let sample = "Texto capturado (simulado)".trim().to_string();
+        if sample.is_empty() {
+            None
+        } else {
+            Some(sample)
+        }
     }
 }

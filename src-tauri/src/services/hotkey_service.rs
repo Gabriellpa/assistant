@@ -1,7 +1,11 @@
 pub struct HotkeyService;
 
 impl HotkeyService {
-    pub fn new() -> Self {
-        Self
+    pub fn primary_hotkey() -> &'static str {
+        "Ctrl+Shift+Space"
+    }
+
+    pub fn pen_hotkey() -> &'static str {
+        "Ctrl+Shift+S"
     }
 }

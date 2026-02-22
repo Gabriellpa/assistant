@@ -1,7 +1,7 @@
 pub struct WindowManager;
 
 impl WindowManager {
-    pub fn new() -> Self {
-        Self
+    pub fn show_overlay() -> bool {
+        true
     }
 }

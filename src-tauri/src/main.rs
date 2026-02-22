@@ -9,6 +9,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::start_text_capture,
             commands::start_selection_mode,
+            commands::cancel_selection_mode,
             commands::send_to_ai,
             commands::save_api_key,
             commands::validate_api_key,
