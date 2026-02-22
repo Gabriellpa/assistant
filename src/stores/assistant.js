@@ -11,10 +11,12 @@ export const useAssistantStore = defineStore('assistant', {
     messages: [],
     composerText: '',
     attachedImage: null,
+    provider: 'chatgpt',
     apiKey: '',
     hasApiKey: false,
     theme: 'dark',
     lastError: '',
+    configModalOpen: false,
     bootstrapped: false
   }),
 
@@ -28,23 +30,19 @@ export const useAssistantStore = defineStore('assistant', {
     async bootstrap() {
       if (this.bootstrapped) return
 
-      const onTextCaptured = (event) => {
+      this.unlistenText = await tauriListen('text_captured', (event) => {
         this.context = event.payload.context
         this.uiState = 'preview_ready'
-      }
+      })
 
-      const onImageCaptured = (event) => {
+      this.unlistenImage = await tauriListen('image_captured', (event) => {
         this.context = event.payload.context
         this.uiState = 'preview_ready'
-      }
+      })
 
-      const onCaptureCancelled = () => {
+      this.unlistenCancelled = await tauriListen('capture_cancelled', () => {
         this.uiState = 'idle'
-      }
-
-      this.unlistenText = await tauriListen('text_captured', onTextCaptured)
-      this.unlistenImage = await tauriListen('image_captured', onImageCaptured)
-      this.unlistenCancelled = await tauriListen('capture_cancelled', onCaptureCancelled)
+      })
 
       const keyIsValid = await tauriInvoke('validate_api_key')
       this.hasApiKey = Boolean(keyIsValid)
@@ -55,6 +53,14 @@ export const useAssistantStore = defineStore('assistant', {
 
       this.applyTheme(this.theme)
       this.bootstrapped = true
+    },
+
+    openConfigModal() {
+      this.configModalOpen = true
+    },
+
+    closeConfigModal() {
+      this.configModalOpen = false
     },
 
     setComposerText(value) {
@@ -96,7 +102,6 @@ export const useAssistantStore = defineStore('assistant', {
 
       try {
         const state = await tauriInvoke('start_text_capture')
-
         if (!state) {
           this.context = {
             id: 'ctx-local-text-1',
@@ -106,7 +111,6 @@ export const useAssistantStore = defineStore('assistant', {
             created_at: Date.now()
           }
         }
-
         this.uiState = 'preview_ready'
       } catch {
         this.lastError = 'Falha ao capturar com hotkey.'
@@ -121,7 +125,6 @@ export const useAssistantStore = defineStore('assistant', {
 
       try {
         const state = await tauriInvoke('start_selection_mode')
-
         if (!state) {
           this.context = {
             id: 'ctx-local-image-1',
@@ -136,10 +139,9 @@ export const useAssistantStore = defineStore('assistant', {
             created_at: Date.now()
           }
         }
-
         this.uiState = 'preview_ready'
       } catch {
-        this.lastError = 'Falha ao iniciar modo caneta.'
+        this.lastError = 'Falha ao abrir modo caneta/seleção de área.'
         this.uiState = 'error'
       }
     },
@@ -153,24 +155,41 @@ export const useAssistantStore = defineStore('assistant', {
       if (!this.apiKey.trim()) {
         this.hasApiKey = false
         this.uiState = 'missing_api_key'
+        this.lastError = 'Informe uma API key para salvar.'
         return false
       }
 
-      const result = await tauriInvoke('save_api_key', { key: this.apiKey.trim() })
+      const payloadKey = `${this.provider}:${this.apiKey.trim()}`
+      const result = await tauriInvoke('save_api_key', { key: payloadKey })
 
       if (result === null) {
         this.hasApiKey = true
         this.uiState = 'idle'
+        this.lastError = ''
+        this.closeConfigModal()
         return true
       }
 
       this.hasApiKey = Boolean(result)
       this.uiState = result ? 'idle' : 'error'
+      this.lastError = result ? '' : 'Não foi possível salvar a API key.'
+
+      if (result) {
+        this.closeConfigModal()
+      }
+
       return Boolean(result)
     },
 
     async sendMessage() {
       if (!this.composerText.trim() && !this.attachedImage) {
+        return
+      }
+
+      if (!this.hasApiKey) {
+        this.uiState = 'missing_api_key'
+        this.lastError = 'Configure sua API key para enviar mensagens à IA.'
+        this.openConfigModal()
         return
       }
 
@@ -208,7 +227,8 @@ export const useAssistantStore = defineStore('assistant', {
         if (String(error).includes('missing_api_key')) {
           this.hasApiKey = false
           this.uiState = 'missing_api_key'
-          this.lastError = 'Configure uma API key válida para continuar.'
+          this.lastError = 'API key inválida ou ausente. Revise nas configurações.'
+          this.openConfigModal()
         } else {
           this.uiState = 'error'
           this.lastError = 'Falha ao enviar mensagem para IA.'
