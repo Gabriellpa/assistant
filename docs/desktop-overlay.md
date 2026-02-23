@@ -37,7 +37,7 @@ Comportamento:
 
 Inicialização (produção):
 
-- No `setup` do backend, a janela principal já inicia em click-through (`set_ignore_cursor_events(true)`) e não focável, para evitar bloquear desktop mesmo antes do frontend montar.
+- No `setup` do backend, a janela principal inicia em modo interativo para permitir clique imediato no core; o usuário pode alternar para click-through quando desejar.
 
 ### Frontend
 

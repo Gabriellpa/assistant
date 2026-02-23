@@ -15,12 +15,12 @@ use tauri::{
 fn main() {
     tauri::Builder::default()
         .manage(commands::OverlayState {
-            interactive: Mutex::new(false),
+            interactive: Mutex::new(true),
         })
         .setup(|app| {
             if let Some(window) = app.get_webview_window("main") {
                 // Enforce HUD style at runtime (avoids platform-specific config drift in dev/prod).
-                let _ = commands::apply_interaction_mode(&window, false);
+                let _ = commands::apply_interaction_mode(&window, true);
             }
 
             let toggle_item = MenuItem::with_id(
