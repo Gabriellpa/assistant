@@ -13,16 +13,16 @@
     "windows": [
       {
         "label": "main",
-        "title": "Contextual Desktop Assistant",
-        "fullscreen": true,
+        "title": "",
         "resizable": false,
         "decorations": false,
         "transparent": true,
         "alwaysOnTop": true,
-        "skipTaskbar": false,
+        "skipTaskbar": true,
         "shadow": false,
         "visible": true,
-        "focus": false
+        "focus": false,
+        "maximized": true
       }
     ],
     "security": {

@@ -13,11 +13,11 @@ Arquivo: `src-tauri/tauri.conf.json`
 
 Principais flags aplicadas na janela `main`:
 
-- `fullscreen: true`
+- `maximized: true`
 - `decorations: false`
 - `transparent: true`
 - `alwaysOnTop: true`
-- `skipTaskbar: false` (para facilitar acesso na barra de tarefas)
+- `skipTaskbar: true` (evita botão grande na taskbar; acesso principal via tray)
 - `shadow: false`
 - `resizable: false`
 
@@ -47,7 +47,7 @@ Inicialização (produção):
   - `toggleInteractionMode()`
 - UI:
   - botão na toolbar para alternar modo
-  - hotkey `Ctrl+Shift+I` para alternância rápida
+  - hotkeys `Ctrl+Shift+I` e `Ctrl+Shift+L` para alternância rápida
 
 ## Implementação do overlay visual
 
@@ -62,7 +62,7 @@ No componente `ChatOverlay.vue`:
 
 ### Windows
 
-- `transparent + alwaysOnTop + fullscreen + decorations: false` funciona bem para HUD.
+- `transparent + alwaysOnTop + maximized + decorations: false` funciona bem para HUD.
 - Em alguns GPUs/drivers pode haver artefatos de composição/transparência (Acrylic/DirectComposition).
 - `set_ignore_cursor_events(true)` pode impedir totalmente interação com a janela (esperado); use toggle para voltar.
 
@@ -90,8 +90,8 @@ No componente `ChatOverlay.vue`:
 
 ## Modo padrão de inicialização
 
-- A aplicação inicializa em `click-through` para não bloquear a interação com o desktop.
-- Para voltar ao modo interativo, use `Ctrl+Shift+I` ou o botão na toolbar quando estiver interativo.
+- A aplicação inicializa em `interactive` para permitir clique imediato no core (chat).
+- Para alternar entre `interactive` e `click-through`, use `Ctrl+Shift+I`, `Ctrl+Shift+L`, botão da toolbar ou tray.
 
 
 ## Robustez da bridge frontend
@@ -107,9 +107,15 @@ No componente `ChatOverlay.vue`:
   - `Alternar interação`
   - `Sair`
 - Isso permite recuperar a interação mesmo quando a janela estiver em click-through.
-- A janela também permanece visível na barra de tarefas (`skipTaskbar: false`).
+- A janela não cria botão grande na barra (`skipTaskbar: true`); o acesso principal é pelo tray.
 
 ## Nota sobre modal de configuração
 
 - Ao abrir a modal, a app força modo interativo.
 - Ao fechar, retorna ao modo anterior (normalmente click-through).
+
+
+## Controles de janela no core
+
+- O core (chat overlay) possui botões para **minimizar** e **fechar** a aplicação.
+- Isso elimina dependência de barra nativa da janela quando ela não deve aparecer.

@@ -88,6 +88,8 @@ fn main() {
             commands::start_selection_mode,
             commands::cancel_selection_mode,
             commands::set_interaction_mode,
+            commands::minimize_main_window,
+            commands::close_app,
             commands::send_to_ai,
             commands::save_api_key,
             commands::validate_api_key,

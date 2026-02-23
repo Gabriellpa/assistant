@@ -62,7 +62,7 @@ const onPanelDragEnd = () => {
 }
 
 const onKeydown = (event) => {
-  if (event.key.toLowerCase() === 'i' && event.ctrlKey && event.shiftKey) {
+  if ((event.key.toLowerCase() === 'i' || event.key.toLowerCase() === 'l') && event.ctrlKey && event.shiftKey) {
     event.preventDefault()
     store.toggleInteractionMode()
     return
@@ -180,6 +180,8 @@ onBeforeUnmount(() => {
         >
           {{ interactionMode === 'interactive' ? '🖱️' : '🪟' }}
         </button>
+        <button class="icon" title="Minimizar" @click.stop="store.minimizeApp()">—</button>
+        <button class="icon" title="Fechar" @click.stop="store.closeApp()">✕</button>
         <span class="state">{{ uiState }}</span>
       </header>
 
@@ -223,8 +225,8 @@ onBeforeUnmount(() => {
         <small>ESC cancela captura ativa.</small>
         <small v-if="attachedImage">Imagem anexada: {{ attachedImage.path }}</small>
         <small v-if="!hasApiKey">Provider não configurado.</small>
-        <small>Ctrl+Shift+I alterna interação/click-through.</small>
-        <small>Inicializa em click-through para não bloquear o desktop.</small>
+        <small>Ctrl+Shift+I ou Ctrl+Shift+L alterna interação/click-through.</small>
+        <small>Inicializa em interativo; use toggle para click-through quando necessário.</small>
       </section>
 
       <div class="modal-backdrop" v-if="configModalOpen" @click.self="store.closeConfigModal">

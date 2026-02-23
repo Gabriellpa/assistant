@@ -128,6 +128,21 @@ pub fn set_interaction_mode(
 }
 
 #[tauri::command]
+pub fn minimize_main_window(app: AppHandle) -> Result<bool, String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "main window not found".to_string())?;
+    window.minimize().map_err(|e| e.to_string())?;
+    Ok(true)
+}
+
+#[tauri::command]
+pub fn close_app(app: AppHandle) -> Result<bool, String> {
+    app.exit(0);
+    Ok(true)
+}
+
+#[tauri::command]
 pub fn send_to_ai(request: AIRequest) -> Result<AIResponse, String> {
     if !SecurityService::has_valid_api_key() {
         return Err("missing_api_key".into());

@@ -17,7 +17,7 @@ export const useAssistantStore = defineStore('assistant', {
     theme: 'dark',
     lastError: '',
     configModalOpen: false,
-    interactionMode: 'click_through',
+    interactionMode: 'interactive',
     coreOpacity: 0.92,
     modeBeforeModal: 'click_through',
     bootstrapped: false
@@ -77,6 +77,14 @@ export const useAssistantStore = defineStore('assistant', {
     async toggleInteractionMode() {
       const nextMode = this.interactionMode === 'interactive' ? 'click_through' : 'interactive'
       await this.setInteractionMode(nextMode)
+    },
+
+    async minimizeApp() {
+      await tauriInvoke('minimize_main_window')
+    },
+
+    async closeApp() {
+      await tauriInvoke('close_app')
     },
 
     async openConfigModal() {
