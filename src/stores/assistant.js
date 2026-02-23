@@ -50,6 +50,13 @@ export const useAssistantStore = defineStore('assistant', {
         this.uiState = 'idle'
       })
 
+      this.unlistenInteractionMode = await tauriListen('interaction_mode_changed', (event) => {
+        const mode = String(event.payload || '')
+        if (mode === 'interactive' || mode === 'click_through') {
+          this.interactionMode = mode
+        }
+      })
+
       const keyIsValid = await tauriInvoke('validate_api_key')
       this.hasApiKey = Boolean(keyIsValid)
 

@@ -119,3 +119,10 @@ No componente `ChatOverlay.vue`:
 
 - O core (chat overlay) possui botões para **minimizar** e **fechar** a aplicação.
 - Isso elimina dependência de barra nativa da janela quando ela não deve aparecer.
+
+
+## Failsafe anti-lock em click-through
+
+- Ao ativar click-through, o backend inicia um temporizador de segurança (~20s).
+- Se a janela continuar em click-through ao final do período, ela retorna automaticamente para `interactive`.
+- O backend também emite evento `interaction_mode_changed` para manter o frontend sincronizado.

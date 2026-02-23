@@ -1,6 +1,7 @@
 use std::{
     sync::Mutex,
-    time::{SystemTime, UNIX_EPOCH},
+    thread,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -122,6 +123,44 @@ pub fn set_interaction_mode(
 
     if let Ok(mut guard) = state.interactive.lock() {
         *guard = interactive;
+    }
+
+    let _ = app.emit(
+        "interaction_mode_changed",
+        if interactive {
+            "interactive"
+        } else {
+            "click_through"
+        },
+    );
+
+    // Failsafe: avoid getting permanently stuck in click-through mode.
+    if !interactive {
+        let app_clone = app.clone();
+        thread::spawn(move || {
+            thread::sleep(Duration::from_secs(20));
+
+            let Some(window) = app_clone.get_webview_window("main") else {
+                return;
+            };
+
+            let Some(state) = app_clone.try_state::<OverlayState>() else {
+                return;
+            };
+
+            let mut should_restore = false;
+            if let Ok(mut guard) = state.interactive.lock() {
+                if !*guard {
+                    *guard = true;
+                    should_restore = true;
+                }
+            }
+
+            if should_restore {
+                let _ = apply_interaction_mode(&window, true);
+                let _ = app_clone.emit("interaction_mode_changed", "interactive");
+            }
+        });
     }
 
     Ok(interactive)

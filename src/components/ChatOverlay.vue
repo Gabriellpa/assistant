@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
         <small v-if="attachedImage">Imagem anexada: {{ attachedImage.path }}</small>
         <small v-if="!hasApiKey">Provider não configurado.</small>
         <small>Ctrl+Shift+I ou Ctrl+Shift+L alterna interação/click-through.</small>
-        <small>Inicializa em interativo; use toggle para click-through quando necessário.</small>
+        <small>Inicializa em interativo; click-through possui failsafe e volta sozinho em ~20s.</small>
       </section>
 
       <div class="modal-backdrop" v-if="configModalOpen" @click.self="store.closeConfigModal">
